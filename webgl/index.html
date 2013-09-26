@@ -1,0 +1,78 @@
+<html>
+  <head>
+    <title>Web GL Playground</title>
+    <script type/text="javascript">
+    var gl;
+    var triangle;
+
+    function updateNoticeArea(message) {
+      var errorDiv = document.getElementById("errors");
+      errorDiv.innerHTML = message;
+    }
+
+    function initCanvas(canvas) {
+      gl = canvas.getContext("experimental-webgl");
+      canvas.viewportWidth = canvas.width;
+      canvas.viewportHeight = canvas.height;
+    }
+
+    function initTriangleBuffer() {
+      if (gl) {
+        triangle = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, triangle);
+        var vertices = [
+          0.0, 1.0, 0.0,
+          -1.0, -1.0, 0.0,
+          1.0, -1.0, 0.0
+        ];
+
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+        triangle.itemSize = 3;
+        triangle.numItems = 3;
+      } else {
+        updateNoticeArea("Could not init triangle buffer");
+      } 
+    }
+
+    function drawScene() {
+      gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+      gl.clear(gl.COLOR_BUFFET_BIT | gl.DEPTH_BUFFER_BIT);
+
+      // Draw triangle
+      gl.bindBuffer(gl.ARRAY_BUFFER, triangle);
+      gl.drawArrays(gl.TRIANGLES, 0, triangle.numItems);
+    }
+
+    function getCanvas() {
+      try {
+        var canvas = document.getElementById("testCanvas");
+        initCanvas(canvas);
+        updateNoticeArea("Got it!");
+      } catch (e) {
+        updateNoticeArea("Got an exception: " + e.message);
+      }
+    }
+
+    function drawCanvas() {
+      getCanvas();
+      initTriangleBuffer();
+      // Totally black, totally opaque no translucency
+      gl.clearColor(0.0, 0.0, 0.0, 1.0);
+
+      drawScene();
+    }
+    </script>
+  </head>
+
+  <body onload="drawCanvas()">
+    Let's try a canvas:
+    <p />
+    <div id="errors">
+      Errors here
+    </div>
+
+    <canvas id="testCanvas" width="200" height="200">
+    </canvas>
+
+      </body>
+</html>
