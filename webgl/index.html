@@ -12,12 +12,10 @@
 
     <!-- Vertex Shader -->
     <script id="shader-vs" type="x-shader/x-vertex">
-      attribute vec3 aVertexPosition;
-      uniform mat4 uMVMatrix;
-      uniform mat4 uPMatrix;
+      attribute vec2 pos;
 
       void main(void) {
-        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+        gl_Position = vec4(pos.x, pos.y, 0.0, 1.0);
       }
     </script>
 
@@ -31,20 +29,7 @@
       errorDiv.innerHTML = message;
     }
 
-    function initBuffers() {
-      var squareBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, squareBuffer);
-      var vertices = [
-        1.0,  1.0,  0.0,
-        -1.0, 1.0,  0.0,
-        1.0,  -1.0, 0.0,
-        -1.0, -1.0, 0.0
-          ];
-
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-    } 
-
-    function getShader(divId) {
+   function initAndCompileShader(divId) {
       var shaderScript = document.getElementById(divId);
       if (!shaderScript) {
         updateNoticeArea("Could not get shader script: " + divId);
@@ -82,118 +67,85 @@
 
       return shader;
     }
-    
-    function initShaders() {
-      var vertexShader = getShader("shader-vs");
-      var fragmentShader = getShader("shader-fs");
-      shaderProgram = gl.createProgram();
-      if (vertexShader == null) {
-        updateNoticeArea("Could not create program");
-        return;
-      }
 
-      gl.attachShader(shaderProgram, vertexShader);
-      gl.attachShader(shaderProgram, fragmentShader);
-      gl.linkProgram(shaderProgram);
-
-      if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        updateNoticeArea("Could not link shader program");
-      }
-
-      gl.useProgram(shaderProgram);
-      // Firefox blows up without a vertex atttribute arrya
-      shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-      gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-    }
-
-    function initCanvas(canvas) {
-      gl = canvas.getContext("experimental-webgl");
-      canvas.viewportWidth = canvas.width;
-      canvas.viewportHeight = canvas.height;
-    }
-
-    function initTriangleBuffer() {
-      if (gl) {
-        triangle = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, triangle);
-        var vertices = [
-          0.0, 1.0, 0.0,
-          -1.0, -1.0, 0.0,
-          1.0, -1.0, 0.0
-        ];
-
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-        triangle.itemSize = 3;
-        triangle.numItems = 3;
-      } else {
-        updateNoticeArea("Could not init triangle buffer");
-      } 
-    }
-
-    function drawScene() {
-      gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-      gl.enable(gl.DEPTH_TEST);
-      gl.depthFunc(gl.LEQUAL);
-      gl.clear(gl.COLOR_BUFFET_BIT | gl.DEPTH_BUFFER_BIT);
-
-      // Draw triangle
-      gl.bindBuffer(gl.ARRAY_BUFFER, triangle);
-      gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, triangle.itemSize, gl.FLOAT, false, 0, 0);
-      gl.drawArrays(gl.TRIANGLES, 0, triangle.numItems);
-    }
-
-    function getCanvas() {
-      try {
-        var canvas = document.getElementById("testCanvas");
-        initCanvas(canvas);
-        updateNoticeArea("Got it!");
-      } catch (e) {
-        updateNoticeArea("Got an exception: " + e.message);
+    function checkNotNull(obj, errorMessage) {
+      if (!obj) {
+        updateNoticeArea(errorMessage);
+        alert(errorMessage);
       }
     }
 
-    function drawCanvas() {
-      getCanvas();
-      initShaders();
-      initTriangleBuffer();
-      // Totally black, totally opaque no translucency
-      gl.clearColor(0.0, 0.0, 0.0, 1.0);
-
-      try {
-        drawScene();
-      } catch (e) {
-        updateNoticeArea("Could not draw scene: " + e.message);
-      }
+    function addProgramAttributes(program) {
+      var attr = gl.getAttribLocation(program, "pos");
+      gl.enableVertexAttribArray(attr);
+      return attr;
     }
 
-    // MDN stuff
-    function initWebGLCanvas(canvas) {
+    function compileProgram(vertexShader, fragmentShader) {
+      var program = gl.createProgram();
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        alert("Could not link program");
+      }
+
+      gl.validateProgram(program);
+      if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
+        alert("Coudl not validate program");
+      }
+
+      gl.useProgram(program);
+      return program;
+    }
+
+    function initProgram() {
+      var vertexShader = initAndCompileShader("shader-vs");
+      var fragmentShader = initAndCompileShader("shader-fs");
+      checkNotNull(vertexShader, "Vertex Shader null");
+      checkNotNull(fragmentShader, "Fragment shader null");
+
+      return compileProgram(vertexShader, fragmentShader);
+    }
+
+    function addVertices(program, attributes) {
+      var buffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+      // Puts vertices to buffer and links it to attribute variable 'ppos'
+      var vertices = new Float32Array([0.0,0.5,-0.5,-0.5,0.5,-0.5]);
+      gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+      gl.vertexAttribPointer(attributes, 2, gl.FLOAT, false, 0, 0);
+    }
+
+    function initCanvas() {
       gl = null;
-      try {
-        gl = canvas.getContext("experimental-webgl");
-      } catch (e) {
-        updateNoticeArea("Could not init canvas");
-      }
-    }
-
-    function mdnGL() {
       var canvas = document.getElementById("testCanvas");
-      initWebGLCanvas(canvas);
-      initShaders();
-      initBuffers();
+      gl = canvas.getContext("experimental-webgl");
+      checkNotNull(gl, "Error getting context");
 
-      if (gl) {
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.LEQUAL);
-        gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-      }
+      gl.clearColor(0.0, 0.0, 0.0, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+    } 
 
+    function drawProgram() {
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      gl.flush();
     }
+
+    function drawInternet() {
+      initCanvas();
+      var program = initProgram();
+      var attributes = addProgramAttributes(program);
+      addVertices(program, attributes);
+      drawProgram();
+    }
+    
     </script>
   </head>
 
-  <body onload="mdnGL()">
+  <body onload="drawInternet()">
     Let's try a canvas:
     <p />
     <div id="errors">
