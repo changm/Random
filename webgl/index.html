@@ -13,8 +13,11 @@
     <!-- Vertex Shader -->
     <script id="shader-vs" type="x-shader/x-vertex">
       attribute vec3 aVertexPosition;
+      uniform mat4 uMVMatrix;
+      uniform mat4 uPMatrix;
+
       void main(void) {
-        gl_Position = vec4(aVertexPosition, 1.0);
+        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
       }
     </script>
 
@@ -27,6 +30,19 @@
       var errorDiv = document.getElementById("errors");
       errorDiv.innerHTML = message;
     }
+
+    function initBuffers() {
+      var squareBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, squareBuffer);
+      var vertices = [
+        1.0,  1.0,  0.0,
+        -1.0, 1.0,  0.0,
+        1.0,  -1.0, 0.0,
+        -1.0, -1.0, 0.0
+          ];
+
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    } 
 
     function getShader(divId) {
       var shaderScript = document.getElementById(divId);
@@ -60,7 +76,7 @@
       gl.compileShader(shader);
 
       if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        updateNoticeArea("Could not compile status shader");
+        alert("Could not compile status shader");
         return null;
       }
 
@@ -163,6 +179,9 @@
     function mdnGL() {
       var canvas = document.getElementById("testCanvas");
       initWebGLCanvas(canvas);
+      initShaders();
+      initBuffers();
+
       if (gl) {
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
         gl.enable(gl.DEPTH_TEST);
