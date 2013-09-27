@@ -1,13 +1,93 @@
 <html>
   <head>
     <title>Web GL Playground</title>
+    <!-- Fragment Shader -->
+    <script id="shader-fs" type="x-shader/x-fragment">
+      precision mediump float;
+
+      void main(void) {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+      }
+    </script>
+
+    <!-- Vertex Shader -->
+    <script id="shader-vs" type="x-shader/x-vertex">
+      attribute vec3 aVertexPosition;
+      void main(void) {
+        gl_Position = vec4(aVertexPosition, 1.0);
+      }
+    </script>
+
     <script type/text="javascript">
     var gl;
     var triangle;
+    var shaderProgram;
 
     function updateNoticeArea(message) {
       var errorDiv = document.getElementById("errors");
       errorDiv.innerHTML = message;
+    }
+
+    function getShader(divId) {
+      var shaderScript = document.getElementById(divId);
+      if (!shaderScript) {
+        updateNoticeArea("Could not get shader script: " + divId);
+      }
+
+      var scriptText = "";
+      var children = shaderScript.firstChild;
+      while (children) {
+        // What is nodetype == 3?
+        // Try with TEXT_NODE?
+        if (children.nodeType == document.TEXT_NODE) {
+          scriptText += children.textContent;
+        }
+
+        children = children.nextSibling;
+      }
+      updateNoticeArea(scriptText);
+
+      var shader;
+      if (shaderScript.type == "x-shader/x-vertex") {
+        shader = gl.createShader(gl.VERTEX_SHADER);
+      } else if (shaderScript.type == "x-shader/x-fragment") {
+        shader = gl.createShader(gl.FRAGMENT_SHADER);
+      } else {
+        return null;
+      }
+
+      gl.shaderSource(shader, scriptText);
+      gl.compileShader(shader);
+
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        updateNoticeArea("Could not compile status shader");
+        return null;
+      }
+
+      return shader;
+    }
+    
+    function initShaders() {
+      var vertexShader = getShader("shader-vs");
+      var fragmentShader = getShader("shader-fs");
+      shaderProgram = gl.createProgram();
+      if (vertexShader == null) {
+        updateNoticeArea("Could not create program");
+        return;
+      }
+
+      gl.attachShader(shaderProgram, vertexShader);
+      gl.attachShader(shaderProgram, fragmentShader);
+      gl.linkProgram(shaderProgram);
+
+      if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+        updateNoticeArea("Could not link shader program");
+      }
+
+      gl.useProgram(shaderProgram);
+      // Firefox blows up without a vertex atttribute arrya
+      shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+      gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
     }
 
     function initCanvas(canvas) {
@@ -36,10 +116,13 @@
 
     function drawScene() {
       gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+      gl.enable(gl.DEPTH_TEST);
+      gl.depthFunc(gl.LEQUAL);
       gl.clear(gl.COLOR_BUFFET_BIT | gl.DEPTH_BUFFER_BIT);
 
       // Draw triangle
       gl.bindBuffer(gl.ARRAY_BUFFER, triangle);
+      gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, triangle.itemSize, gl.FLOAT, false, 0, 0);
       gl.drawArrays(gl.TRIANGLES, 0, triangle.numItems);
     }
 
@@ -55,23 +138,50 @@
 
     function drawCanvas() {
       getCanvas();
+      initShaders();
       initTriangleBuffer();
       // Totally black, totally opaque no translucency
       gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
-      drawScene();
+      try {
+        drawScene();
+      } catch (e) {
+        updateNoticeArea("Could not draw scene: " + e.message);
+      }
+    }
+
+    // MDN stuff
+    function initWebGLCanvas(canvas) {
+      gl = null;
+      try {
+        gl = canvas.getContext("experimental-webgl");
+      } catch (e) {
+        updateNoticeArea("Could not init canvas");
+      }
+    }
+
+    function mdnGL() {
+      var canvas = document.getElementById("testCanvas");
+      initWebGLCanvas(canvas);
+      if (gl) {
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LEQUAL);
+        gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+      }
+
     }
     </script>
   </head>
 
-  <body onload="drawCanvas()">
+  <body onload="mdnGL()">
     Let's try a canvas:
     <p />
     <div id="errors">
       Errors here
     </div>
 
-    <canvas id="testCanvas" width="200" height="200">
+    <canvas id="testCanvas" width="640" height="480">
     </canvas>
 
       </body>
