@@ -15,7 +15,7 @@
       attribute vec2 pos;
 
       void main(void) {
-        gl_Position = vec4(pos.x, pos.y, 0.0, 1.0);
+        gl_Position = vec4(pos.x, pos.y, 0.0, 1.2);
       }
     </script>
 
@@ -114,7 +114,13 @@
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
       // Puts vertices to buffer and links it to attribute variable 'ppos'
-      var vertices = new Float32Array([0.0,0.5,-0.5,-0.5,0.5,-0.5]);
+      var points = [
+        -0.5, 0,
+        0.5, 0,
+        0.0, 0.5];
+
+      var vertices = new Float32Array(points);
+      //var vertices = new Float32Array([0.0,0.5,-0.5,-0.5,0.5,-0.5]);
       gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
       gl.vertexAttribPointer(attributes, 2, gl.FLOAT, false, 0, 0);
     }
