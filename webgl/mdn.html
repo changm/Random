@@ -96,11 +96,19 @@
         gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
 
         // Puts vertices to buffer and links it to attribute variable 'ppos'
+        /*
         var points = [
           -1.0, 0.0, 0.0,
           1.0, 0.0, 0.0,
-          0.0, 1.0, 0.0];
-
+          0.0, 1.0, 0.0,
+          -1.0, -1.0, 0.0];
+         */
+        var points = [
+          1.0,  1.0,  0.0,
+          -1.0, 1.0,  0.0,
+          1.0,  -1.0, 0.0,
+          -1.0, -1.0, 0.0
+        ];
         var vertices = new Float32Array(points);
         gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
       }
@@ -180,7 +188,7 @@
         gl.vertexAttribPointer(colorAttributes, 4, gl.FLOAT, false, 0, 0);
         setMatrixUniforms();
 
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         gl.flush();
       }
 
@@ -198,18 +206,17 @@
       } 
 
       function addProgramAttributes() {
-        var attr = gl.getAttribLocation(shaderProgram, "position");
-        gl.enableVertexAttribArray(attr);
+        attributes = gl.getAttribLocation(shaderProgram, "position");
+        gl.enableVertexAttribArray(attributes);
 
         colorAttributes = gl.getAttribLocation(shaderProgram, "color");
         gl.enableVertexAttribArray(colorAttributes);
-        return attr;
       }
       
       function start() {
         initCanvas();
         initProgram();
-        attributes = addProgramAttributes();
+        addProgramAttributes();
         addVertices(attributes);
         drawProgram();
       }
