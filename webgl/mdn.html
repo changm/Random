@@ -6,29 +6,36 @@
 
     <!-- Fragment Shader -->
     <script id="shader-fs" type="x-shader/x-fragment">
-      precision mediump float;
+      varying lowp vec4 vColor;
 
       void main(void) {
-        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+        gl_FragColor = vColor;
       }
     </script>
 
     <!-- Vertex Shader -->
     <script id="shader-vs" type="x-shader/x-vertex">
       attribute vec3 position;
+      attribute vec4 color;
+
       uniform mat4 uMVMatrix;
       uniform mat4 uPMatrix;
+
+      varying lowp vec4 vColor;
 
       void main(void) {
         gl_Position = uPMatrix * uMVMatrix * 
                       vec4(position, 1.0);
+        vColor = color;
       }
     </script>
 
     <script type/text="javascript">
       var gl;
       var verticesBuffer;
+      var verticesColorBuffer;
       var attributes;
+      var colorAttributes;
       var perspectiveMatrix;
       var mvMatrix;
       var shaderProgram;
@@ -73,14 +80,26 @@
       }
 
       function addVertices(attributes) {
+        // RGB + opacity
+        var colors = [
+          1.0, 1.0, 1.0, 1.0, // white
+          1.0, 0.0, 0.0, 1.0, // red
+          0.0, 1.0, 0.0, 1.0, // green
+          0.0, 0.0, 1.0, 1.0 // blue
+        ];
+
+        verticesColorBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, verticesColorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+
         verticesBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
 
         // Puts vertices to buffer and links it to attribute variable 'ppos'
         var points = [
-          -0.5, 0.0, 0.0,
-          0.5, 0.0, 0.0,
-          0.0, 0.5, 0.0];
+          -1.0, 0.0, 0.0,
+          1.0, 0.0, 0.0,
+          0.0, 1.0, 0.0];
 
         var vertices = new Float32Array(points);
         gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
@@ -156,6 +175,9 @@
 
         gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
         gl.vertexAttribPointer(attributes, 3, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, verticesColorBuffer);
+        gl.vertexAttribPointer(colorAttributes, 4, gl.FLOAT, false, 0, 0);
         setMatrixUniforms();
 
         gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -178,6 +200,9 @@
       function addProgramAttributes() {
         var attr = gl.getAttribLocation(shaderProgram, "position");
         gl.enableVertexAttribArray(attr);
+
+        colorAttributes = gl.getAttribLocation(shaderProgram, "color");
+        gl.enableVertexAttribArray(colorAttributes);
         return attr;
       }
       
