@@ -1,0 +1,199 @@
+<html>
+  <head>
+    <title>MDN Web GL Series</title>
+    <script type/text="javascript" src="sylvester.src.js"></script> 
+    <script type/text="javascript" src="glUtils.js"></script> 
+
+    <!-- Fragment Shader -->
+    <script id="shader-fs" type="x-shader/x-fragment">
+      precision mediump float;
+
+      void main(void) {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+      }
+    </script>
+
+    <!-- Vertex Shader -->
+    <script id="shader-vs" type="x-shader/x-vertex">
+      attribute vec3 position;
+      uniform mat4 uMVMatrix;
+      uniform mat4 uPMatrix;
+
+      void main(void) {
+        gl_Position = uPMatrix * uMVMatrix * 
+                      vec4(position, 1.0);
+      }
+    </script>
+
+    <script type/text="javascript">
+      var gl;
+      var verticesBuffer;
+      var attributes;
+      var perspectiveMatrix;
+      var mvMatrix;
+      var shaderProgram;
+
+      function loadIdentity() {
+        mvMatrix = Matrix.I(4);
+      }
+
+      function multMatrix(m) {
+        mvMatrix = mvMatrix.x(m);
+      }
+
+      function mvTranslate(v) {
+        multMatrix(Matrix.Translation($V([v[0], v[1], v[2]])).ensure4x4());
+      }
+
+      function setMatrixUniforms() {
+        var pUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+        gl.uniformMatrix4fv(pUniform, false, new Float32Array(perspectiveMatrix.flatten()));
+
+        var mvUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+        gl.uniformMatrix4fv(mvUniform, false, new Float32Array(mvMatrix.flatten()));
+      }
+
+      function compileProgram(vertexShader, fragmentShader) {
+        shaderProgram = gl.createProgram();
+        gl.attachShader(shaderProgram, vertexShader);
+        gl.attachShader(shaderProgram, fragmentShader);
+        gl.linkProgram(shaderProgram);
+
+        if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+          alert("Could not link program");
+        }
+
+        gl.validateProgram(shaderProgram);
+        if (!gl.getProgramParameter(shaderProgram, gl.VALIDATE_STATUS)) {
+          alert("Coudl not validate program");
+        }
+
+        gl.useProgram(shaderProgram);
+        return shaderProgram;
+      }
+
+      function addVertices(attributes) {
+        verticesBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
+
+        // Puts vertices to buffer and links it to attribute variable 'ppos'
+        var points = [
+          -0.5, 0.0, 0.0,
+          0.5, 0.0, 0.0,
+          0.0, 0.5, 0.0];
+
+        var vertices = new Float32Array(points);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+      }
+
+      function initProgram() {
+        var vertexShader = initAndCompileShader("shader-vs");
+        var fragmentShader = initAndCompileShader("shader-fs");
+        checkNotNull(vertexShader, "Vertex Shader null");
+        checkNotNull(fragmentShader, "Fragment shader null");
+
+        return compileProgram(vertexShader, fragmentShader);
+      }
+
+      function initAndCompileShader(divId) {
+        var shaderScript = document.getElementById(divId);
+        if (!shaderScript) {
+          updateError("Could not get shader script: " + divId);
+        } else {
+          updateError("Got Shader Script: " + divId);
+        }
+
+        var scriptText = "";
+        var children = shaderScript.firstChild;
+        while (children) {
+          // What is nodetype == 3?
+          // Try with TEXT_NODE?
+          if (children.nodeType == document.TEXT_NODE) {
+            scriptText += children.textContent;
+          }
+
+          children = children.nextSibling;
+        }
+        updateError(scriptText);
+
+        var shader;
+        if (shaderScript.type == "x-shader/x-vertex") {
+          shader = gl.createShader(gl.VERTEX_SHADER);
+        } else if (shaderScript.type == "x-shader/x-fragment") {
+          shader = gl.createShader(gl.FRAGMENT_SHADER);
+        } else {
+          return null;
+        }
+
+        gl.shaderSource(shader, scriptText);
+        gl.compileShader(shader);
+
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+          alert("Could not compile status shader");
+          return null;
+        }
+
+        return shader;
+      }
+
+      function updateError(error) {
+        var errorDiv = document.getElementById("error");
+        errorDiv.innerHTML = error;
+      }
+
+      function checkNotNull(obj, error) {
+        if (obj == null) {
+          updateError(error);
+        }
+      }
+
+      function drawProgram() {
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        perspectiveMatrix = makePerspective(45, 640.0/480.0, 0.1, 100.0);
+
+        loadIdentity();
+        mvTranslate([-0.0, 0.0, -6.0]);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
+        gl.vertexAttribPointer(attributes, 3, gl.FLOAT, false, 0, 0);
+        setMatrixUniforms();
+
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.flush();
+      }
+
+      function initCanvas() {
+        gl = null;
+        var canvas = document.getElementById("canvas");
+        gl = canvas.getContext("experimental-webgl");
+        checkNotNull(gl, "Error getting context");
+
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.clearDepth(1.0);
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LEQUAL);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+      } 
+
+      function addProgramAttributes() {
+        var attr = gl.getAttribLocation(shaderProgram, "position");
+        gl.enableVertexAttribArray(attr);
+        return attr;
+      }
+      
+      function start() {
+        initCanvas();
+        initProgram();
+        attributes = addProgramAttributes();
+        addVertices(attributes);
+        drawProgram();
+      }
+    </script>
+  </head>
+
+  <body onload="start()">
+    <div id="error">Error Messages Here</div>
+    <p />
+    <canvas id="canvas" width="640" height="480" />
+  </body>
+</html>
