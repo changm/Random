@@ -73,35 +73,73 @@ void drawLineRel(Point* current, GLfloat x, GLfloat y) {
   drawLineRel(current);
 }
 
+void sierpA(Point* current, int level);
+void sierpB(Point* current, int level);
+void sierpC(Point* current, int level);
+void sierpD(Point* current, int level);
+
 void sierpA(Point* current, int level) {
   if (level) {
+    int nextLevel = level - 1;
+    sierpA(current, nextLevel);
     drawLineRel(current, distance, distance);
+
+    sierpB(current, nextLevel);
     drawLineRel(current, 2 * distance, 0);
+
+    sierpD(current, nextLevel);
     drawLineRel(current, distance, -distance);
-}
+
+    // Interesting we go back to A
+    sierpA(current, nextLevel);
+  }
 }
 
 void sierpB(Point* current, int level) {
   if (level) {
+    int nextLevel = level - 1;
+    sierpB(current, nextLevel);
     drawLineRel(current, -distance, distance);
+
+    sierpC(current, nextLevel);
     drawLineRel(current, 0, 2 * distance);
+
+    sierpA(current, nextLevel);
     drawLineRel(current, distance, distance);
+
+    sierpB(current, nextLevel);
   }
 }
 
 void sierpC(Point* current, int level) {
   if (level) {
+    int nextLevel = level - 1;
+    sierpC(current, nextLevel);
     drawLineRel(current, -distance, -distance);
+
+    sierpD(current, nextLevel);
     drawLineRel(current, -2 * distance, 0);
+
+    sierpB(current, nextLevel);
     drawLineRel(current, -distance, distance);
+
+    sierpC(current, nextLevel);
   }
 }
 
 void sierpD(Point* current, int level) {
   if (level) {
+    int nextLevel = level - 1;
+    sierpD(current, nextLevel);
     drawLineRel(current, distance, -distance);
+
+    sierpA(current, nextLevel);
     drawLineRel(current, 0, -2 * distance);
+
+    sierpC(current, nextLevel);
     drawLineRel(current, -distance, -distance);
+
+    sierpD(current, nextLevel);
   }
 }
 
@@ -120,6 +158,11 @@ void display(void) {
   // create a line strip connecting the dots
   glBegin(GL_LINE_STRIP);
   drawLineRel(&current);
+
+  // Shrink our curves depending on number of levels
+  for (int i = levels; i > 0; i--) {
+    distance = distance / 2;
+  }
 
   int level = levels;
   // Recursive sierp
