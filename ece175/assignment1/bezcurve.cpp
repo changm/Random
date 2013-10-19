@@ -24,20 +24,9 @@ public:
   }
 };
 
-GLfloat ctrlpoints[4][3] = {
-  { -4.0, -4.0, 0.0}, { -2.0, 4.0, 0.0},
-  {2.0, -4.0, 0.0}, {4.0, 4.0, 0.0}};
-
 void drawCurve(void) {
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glShadeModel(GL_FLAT);
-  // the 3 here means we're doing a cubic evaluation
-  // Since we're doing a cubic evaluation, we need 4 control points
-  // Control points here need a z because we specify GL_MAP1_VERTEX_3
-  // glMap1f seems to auto do a bezier curve
-  //glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, 4, &ctrlpoints[0][0]);
-  //glEnable(GL_MAP1_VERTEX_3);
-  // Yup GL_MAP1_VERTEX_3 lets opengl do our curve evaluation instead of us
 }
 
 GLfloat bezierCurve(float t, GLfloat P0,
@@ -62,11 +51,16 @@ void display(void) {
   glClear(GL_COLOR_BUFFER_BIT);
   glColor3f(1.0, 1.0, 1.0);
 
+  glPointSize(5.0);
+  // yellow points!
+  glColor3f(1.0, 1.0, 0.0);
+
   // Let's draw it using our own bezier curve
   // Use our own bezier curve function,
   // create a line strip connecting the dots
+  //glBegin(GL_LINE_STRIP);
   glBegin(GL_LINE_STRIP);
-  int t = 50;
+  int t = 30;
   for (i = 0; i <= t; i++) {
     float pos = (float) i / (float) t;
     GLfloat x = bezierCurve(pos, start._x, tan1._x, tan2._x, end._x);
@@ -79,19 +73,6 @@ void display(void) {
     glVertex3f(x, y, z);
   }
   glEnd();
-
-  /* The following code displays the control points as dots. */
-  /*
-  glPointSize(5.0);
-  // yellow points!
-  glColor3f(1.0, 1.0, 0.0);
-
-  // Draws the points
-  glBegin(GL_POINTS);
-  for (i = 0; i < 4; i++)
-    glVertex3fv(&ctrlpoints[i][0]);
-  glEnd();
-  */
 
   // Always need a flush
   glFlush();
