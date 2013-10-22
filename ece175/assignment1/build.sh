@@ -1,5 +1,5 @@
 #!/bin/bash
-clang++ -framework OpenGL bezcurve.cpp -framework GLUT
+clang++ -framework OpenGL nicomedes.cpp -framework GLUT
 if [ $? -ne 0 ]
 then
   echo "Compile error"

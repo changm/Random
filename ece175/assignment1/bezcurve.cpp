@@ -59,7 +59,7 @@ void display(void) {
   // Use our own bezier curve function,
   // create a line strip connecting the dots
   //glBegin(GL_LINE_STRIP);
-  glBegin(GL_LINE_STRIP);
+  glBegin(GL_POINTS);
   int t = 30;
   for (i = 0; i <= t; i++) {
     float pos = (float) i / (float) t;
