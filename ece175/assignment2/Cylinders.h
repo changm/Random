@@ -86,9 +86,10 @@ class Cylinder {
 
     void drawTop() {
       // For now don't draw about the Z axis
-      GLfloat points = 50.0;
+      GLfloat points = 100.0;
       GLfloat increment = (2.0 * M_PI) / points;
       for (GLfloat theta = 0; theta <= 2.0 * M_PI; theta += increment) {
+        // So we rotate about the Z axis now
         GLfloat z = 0.0;
         GLfloat x = cos(theta) * _radius;
         GLfloat y = sin(theta) * _radius;

@@ -43,7 +43,7 @@ void display(void) {
   // yellow points!
   glColor3f(1.0, 1.0, 0.0);
 
-  glBegin(GL_POINTS);
+  glBegin(GL_LINE_STRIP);
   Cylinder cylinder(2.0, 3.0);
   cylinder.draw();
   glEnd();
@@ -52,6 +52,7 @@ void display(void) {
   glFlush();
 }
 
+// Clip the same
 void clip(int w, int h) {
   GLfloat left = -5.0;
   GLfloat right = 5.0;
@@ -79,10 +80,16 @@ void reshape(int w, int h) {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 
-  clip(w, h);
+  gluPerspective(90.0, 1.0, 1.0, 4.0);
+
+  //clip(w, h);
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
+
+  gluLookAt(0.0, 0.0, 3.0,  // eye starting
+            0.0, 0.0, 2.0,  // vector where
+            0.0, 1.0, 0.0); // make y axis our "up"
 }
 
 int main(int argc, char** argv)
