@@ -13,6 +13,7 @@
 
 class Point;
 class Cylinder;
+class Cube;
 
 /*
 GLfloat calcQ(GLfloat p1, GLfloat p2) {
@@ -69,6 +70,86 @@ public:
   }
 };
 
+class Cube {
+  public:
+    Cube(GLfloat x1, GLfloat y1, GLfloat z1,
+        GLfloat x2, GLfloat y2, GLfloat z2) :
+        _x1(x1), _y1(y1), _z1(z2),
+        _x2(x2), _y2(y2), _z2(z2) {}
+
+    void print() {
+      printf("Printing teh point\n");
+    }
+
+    void iterateX() {
+      iterateY(_x1);
+      iterateY(_x2);
+    }
+
+    void iterateY(GLfloat x) {
+      iterateZ(x, _y1);
+      iterateZ(x, _y2);
+    }
+
+    // At the moment let's overdraw
+    void iterateZ(GLfloat x, GLfloat y) {
+      GLfloat w = 1.0;
+      glVertex4f(x, y, _z1, w);
+      glVertex4f(x, y, _z2, w);
+    }
+
+    void drawXYPlane(GLfloat z) {
+      GLfloat w = 1.0;
+      // Even though we're doing line segments
+      // It has to be in the specific order of
+      // the "current" point
+
+      // Draw bottom line
+      glVertex4f(_x1, _y1, z, w);
+      glVertex4f(_x2, _y1, z, w);
+
+      // Draw right line
+      glVertex4f(_x2, _y1, z, w);
+      glVertex4f(_x2, _y2, z, w);
+
+      // Draw top line
+      glVertex4f(_x2, _y2, z, w);
+      glVertex4f(_x1, _y2, z, w);
+
+      // Draw left line
+      glVertex4f(_x1, _y1, z, w);
+      glVertex4f(_x1, _y2, z, w);
+
+      // Now we're back at P1(x1, y1, z);
+    }
+
+    void connect() {
+      // Should be at point (x1, y1, z1);
+      // Connect to (x1, y1, z2), go "depth"
+      GLfloat w = 1.0;
+      glVertex4f(_x1, _y2, _z1, w);
+      glVertex4f(_x1, _y2, _z2, w);
+    }
+
+    // At this point should have the 2 XY squares
+    // with 1 line connecting the 2 XY squares
+    // through the Z plane
+    void draw() {
+      drawXYPlane(_z1);
+      connect();
+      drawXYPlane(_z2);
+      printf("Z2 is: %f\n", _z2);
+    }
+
+  private:
+    GLfloat _x1;
+    GLfloat _y1;
+    GLfloat _z1;
+    GLfloat _x2;
+    GLfloat _y2;
+    GLfloat _z2;
+};
+
 class Cylinder {
   public:
     Cylinder(GLfloat radius, GLfloat height) :
@@ -94,16 +175,14 @@ class Cylinder {
         GLfloat x = cos(theta) * _radius;
         GLfloat y = sin(theta) * _radius;
         GLfloat w = 1.0;
-        glVertex4f(x, y, z, w);
+        glVertex4f(x, y, z, 1.0);
       }
     }
 
     void drawBottom() {
-
     }
 
     void drawConnection() {
-
     }
 };
 

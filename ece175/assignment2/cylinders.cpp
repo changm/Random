@@ -31,11 +31,6 @@ void drawCurve(std::vector<Point*>& controlPoints) {
 void display(void) {
   int i;
 
-  // Our control points
-  Point* start = newPoint(0.0, 0.0);
-  Point* end = newPoint(0.0, 4.0);
-  Point* right = newPoint(4.0, 4.0);
-
   glClear(GL_COLOR_BUFFER_BIT);
   glColor3f(1.0, 1.0, 1.0);
 
@@ -44,8 +39,13 @@ void display(void) {
   glColor3f(1.0, 1.0, 0.0);
 
   glBegin(GL_LINE_STRIP);
-  Cylinder cylinder(2.0, 3.0);
-  cylinder.draw();
+  Cylinder cylinder(1.0, 3.0);
+  //cylinder.draw();
+
+  Cube cube(0, 0, 0,
+        3.0, 3.0, 8.0);
+  cube.draw();
+
   glEnd();
 
   // Always need a flush
@@ -80,23 +80,40 @@ void reshape(int w, int h) {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 
-  gluPerspective(90.0, 1.0, 1.0, 4.0);
-
-  //clip(w, h);
+  // 90 degrees mean we're looking directly at the circle?
+  // at 180 degrees the object disappears, why?
+  // NEVAR CLIP
+  gluPerspective(90.0, 1.0, 1.0, 100.0);
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
+  // Basically, we have a unit circle around the X/Y axis
+  // We start the "eye" at +3
+  // We set center to negative from the eye starting point
+  // imagine a circle, and we have the eye ball ahead of it
+  // and tell the eyeball to look behind it
+  // Probably more logical to do the other way but this works
+  // In our case, the "up" doesn't amtter as long as its not on the z axis
+  // If it is on the Z axis, it's telling our camera up is the same direction
+  // we're looking, which doesn't make sense when staring at a circle
+  /*
   gluLookAt(0.0, 0.0, 3.0,  // eye starting
             0.0, 0.0, 2.0,  // vector where
             0.0, 1.0, 0.0); // make y axis our "up"
+            */
+  // Le cube!
+  gluLookAt(0.0, 0.0, 0.0,  // eye starting
+            0.0, 0.0, 1.0,  // vector where
+            0.0, 1.0, 0.0); // make y axis our "up"
+   
 }
 
 int main(int argc, char** argv)
 {
   glutInit(&argc, argv);
   glutInitDisplayMode (GLUT_SINGLE | GLUT_RGB);
-  glutInitWindowSize (640, 480);
+  glutInitWindowSize (600, 600);
   glutInitWindowPosition (100, 100);
   glutCreateWindow (argv[0]);
 
