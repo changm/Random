@@ -108,17 +108,15 @@ class Cube {
       glVertex4f(_x1, _y1, z, w);
       glVertex4f(_x2, _y1, z, w);
 
-      // Draw right line
-      glVertex4f(_x2, _y1, z, w);
-      glVertex4f(_x2, _y2, z, w);
-
       // Draw top line
-      glVertex4f(_x2, _y2, z, w);
-      glVertex4f(_x1, _y2, z, w);
+      /*
+      glVertex4f(_x2, _y2, _z2, w);
+      glVertex4f(_x1, _y2, _z2, w);
 
       // Draw left line
-      glVertex4f(_x1, _y1, z, w);
-      glVertex4f(_x1, _y2, z, w);
+      glVertex4f(_x1, _y1, _z2, w);
+      glVertex4f(_x1, _y2, _z2, w);
+      */
 
       // Now we're back at P1(x1, y1, z);
     }
@@ -127,36 +125,36 @@ class Cube {
       // Should be at point (x1, y1, z1);
       // Connect to (x1, y1, z2), go "depth"
       GLfloat w = 1.0;
-      glVertex4f(_x1, _y2, _z1, w);
-      glVertex4f(_x1, _y2, _z2, w);
+      //glVertex4f(_x1, _y2, _z1, w);
+      //glVertex4f(_x1, _y2, _z2, w);
     }
 
     void connectPlanes() {
       // Should be at (x1, y1, z2);
       GLfloat w = 1.0;
       // Back, bottmom
-      glVertex4f(_x1, _y1, _z2);
-      glVertex4f(_x2, _y1, _z2);
+      glVertex4f(_x1, _y1, _z2, w);
+      glVertex4f(_x2, _y1, _z2, w);
 
       // bottom->bottom front
-      glVertex4f(_x2, _y1, _z2);
-      glVertex4f(_x2, _y1, _z1);
+      glVertex4f(_x2, _y1, _z2, w);
+      glVertex4f(_x2, _y1, _z1, w);
 
       // Bottom front -> top front
-      glVertex4f(_x2, _y1, _z1);
-      glVertex4f(_x2, _y2, _z1);
+      glVertex4f(_x2, _y1, _z1, w);
+      glVertex4f(_x2, _y2, _z1, w);
 
       // top front -> top back
-      glVertex4f(_x2, _y2, _z1);
-      glVertex4f(_x2, _y2, _z2);
+      glVertex4f(_x2, _y2, _z1, w);
+      glVertex4f(_x2, _y2, _z2, w);
 
       // top right back -> top left back
-      glVertex4f(_x2, _y2, _z2);
-      glVertex4f(_x1, _y2, _z2);
+      glVertex4f(_x2, _y2, _z2, w);
+      glVertex4f(_x1, _y2, _z2, w);
 
       // Top right back -> top right front
-      glVertex4f(_x1, _y2, _z2);
-      glVertex4f(_x1, _y2, _z1);
+      glVertex4f(_x1, _y2, _z2, w);
+      glVertex4f(_x1, _y2, _z1, w);
     }
 
     // At this point should have the 2 XY squares
@@ -164,10 +162,10 @@ class Cube {
     // through the Z plane
     void draw() {
       drawXYPlane(_z1);
-      connect();
-      drawXYPlane(_z2);
+      //connect();
+      //drawXYPlane(_z2);
       // Should be at (xy, y1, x2);
-      connectPlanes();
+      //connectPlanes();
     }
 
   private:

@@ -38,12 +38,12 @@ void display(void) {
   // yellow points!
   glColor3f(1.0, 1.0, 0.0);
 
-  glBegin(GL_LINE_STRIP);
+  glBegin(GL_LINES);
   Cylinder cylinder(1.0, 3.0);
   //cylinder.draw();
 
   Cube cube(0, 0, 0,
-        3.0, 3.0, 8.0);
+        4.0, 4.0, 4.0);
   cube.draw();
 
   glEnd();
@@ -83,7 +83,7 @@ void reshape(int w, int h) {
   // 90 degrees mean we're looking directly at the circle?
   // at 180 degrees the object disappears, why?
   // NEVAR CLIP
-  gluPerspective(90.0, 1.0, 1.0, 100.0);
+  gluPerspective(80.0, 1.0, 1.0, 10.0);
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -103,10 +103,9 @@ void reshape(int w, int h) {
             0.0, 1.0, 0.0); // make y axis our "up"
             */
   // Le cube!
-  gluLookAt(0.0, 0.0, 0.0,  // eye starting
+  gluLookAt(-1.0, 0.0, -2.0,  // eye starting
             0.0, 0.0, 1.0,  // vector where
             0.0, 1.0, 0.0); // make y axis our "up"
-   
 }
 
 int main(int argc, char** argv)
