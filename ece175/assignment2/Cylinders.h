@@ -131,6 +131,34 @@ class Cube {
       glVertex4f(_x1, _y2, _z2, w);
     }
 
+    void connectPlanes() {
+      // Should be at (x1, y1, z2);
+      GLfloat w = 1.0;
+      // Back, bottmom
+      glVertex4f(_x1, _y1, _z2);
+      glVertex4f(_x2, _y1, _z2);
+
+      // bottom->bottom front
+      glVertex4f(_x2, _y1, _z2);
+      glVertex4f(_x2, _y1, _z1);
+
+      // Bottom front -> top front
+      glVertex4f(_x2, _y1, _z1);
+      glVertex4f(_x2, _y2, _z1);
+
+      // top front -> top back
+      glVertex4f(_x2, _y2, _z1);
+      glVertex4f(_x2, _y2, _z2);
+
+      // top right back -> top left back
+      glVertex4f(_x2, _y2, _z2);
+      glVertex4f(_x1, _y2, _z2);
+
+      // Top right back -> top right front
+      glVertex4f(_x1, _y2, _z2);
+      glVertex4f(_x1, _y2, _z1);
+    }
+
     // At this point should have the 2 XY squares
     // with 1 line connecting the 2 XY squares
     // through the Z plane
@@ -138,7 +166,8 @@ class Cube {
       drawXYPlane(_z1);
       connect();
       drawXYPlane(_z2);
-      printf("Z2 is: %f\n", _z2);
+      // Should be at (xy, y1, x2);
+      connectPlanes();
     }
 
   private:
